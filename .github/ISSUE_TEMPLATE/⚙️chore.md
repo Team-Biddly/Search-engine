@@ -1,7 +1,7 @@
 ---
 name: "⚙️Chore"
 about: 빌드 스크립트, 패키지 의존성, CI/CD 등 환경 설정을 수정합니다.
-title: ''
+title: 'chore:'
 labels: ''
 assignees: ''
 

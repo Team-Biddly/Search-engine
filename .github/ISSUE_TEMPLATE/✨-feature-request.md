@@ -1,8 +1,8 @@
 ---
 name: "✨ Feature Request"
 about: '엔진의 새로운 기능이나 고도화를 제안합니다. '
-title: ''
-labels: ''
+title: 'feat:'
+labels: enhancement
 assignees: ''
 
 ---
