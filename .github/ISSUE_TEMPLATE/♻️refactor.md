@@ -1,5 +1,5 @@
 ---
-name: "♻️Refacotr"
+name: "♻️Refactor"
 about: 코드 구조 개선, 가독성 향상, 성능 최적화를 진행합니다.
 title: ''
 labels: ''
