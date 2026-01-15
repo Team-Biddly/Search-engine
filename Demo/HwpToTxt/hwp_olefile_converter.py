@@ -35,7 +35,7 @@ class HwpOleFileConverter:
             decoded_text = encoded_text.decode("utf-16")
             print(f"[PrvText size decoded] {len(decoded_text)}")
             ole.close()
-            return decoded_text, False
+            return decoded_text, True
 
             # # try PrvText
             # if ole.exists('PrvText'):
