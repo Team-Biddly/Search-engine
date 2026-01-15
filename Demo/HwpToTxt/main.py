@@ -55,12 +55,12 @@ async def test_convert(
     document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
     if not document:
         raise HTTPException(status_code=404, detail="Notice not found")
-    if not document.ntceSpecFile:
+    if not document.ntceSpecFileNm:
         raise HTTPException(status_code=404, detail="NTC Spec file not found")
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    success, text = converter.hwp_to_txt(document.ntceSpecFile, filename)
+    success, text = converter.hwp_to_txt(document.ntceSpecFileNm, filename)
     if success:
         document.converted_txt = text
         document.is_converted = True
@@ -73,6 +73,5 @@ async def test_convert(
     return {
         "status": "success" if success else "failed",
         "document_id": document.id,
-        "notice_id": document.notice_id,
         "is_converted": document.is_converted,
     }
