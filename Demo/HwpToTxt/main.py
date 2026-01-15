@@ -27,7 +27,7 @@ async def test_upload(
     try:
         content = await file.read()
         notice = BidNotice(
-            ntceSpecFile=content,
+            ntceSpecFileNm=content,
         )
         db.add(notice)
         db.commit()
@@ -37,7 +37,6 @@ async def test_upload(
             "status": "success",
             "message": "success",
             "notice_id": notice.id,
-            "notice": notice.notice,
         }
     except Exception as e:
         db.rollback()
