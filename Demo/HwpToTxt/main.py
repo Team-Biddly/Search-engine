@@ -79,7 +79,7 @@ async def test_api_convert(
 
 # convert hwp olefile
 @app.post("/test/ole_convert/{notice_id}", tags=["test"])
-async def test_api_convert(
+async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
 ):
