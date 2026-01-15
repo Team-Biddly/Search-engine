@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from database import BidNotice, get_db, init_db
-from hwp_converter import HWPConverter
+from hwp_api_converter import HwpApiConverter
+from hwp_olefile_converter import HwpOleFileConverter
 
 app = FastAPI(
     title="HWP to Txt Converter",
@@ -10,7 +11,8 @@ app = FastAPI(
 )
 
 # Init
-converter = HWPConverter(api_key="~~~~")
+api_converter = HwpApiConverter(api_key="~~~~")
+ole_converter = HwpOleFileConverter()
 init_db()
 
 # upload hwp api
@@ -43,14 +45,13 @@ async def test_upload(
         raise HTTPException(status_code=500, detail=str(e))
 
 # convert hwp api
-@app.post("/test/convert/{notice_id}", tags=["test"])
-async def test_convert(
+@app.post("/test/api_convert/{notice_id}", tags=["test"])
+async def test_api_convert(
         notice_id: int,
         db: Session = Depends(get_db),
 ):
     """
     Method: Post
-    URL: http://127.0.0.1:5000/test/convert/{notice_id}
     """
     document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
     if not document:
@@ -60,7 +61,41 @@ async def test_convert(
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    success, text = converter.hwp_to_txt(document.ntceSpecFileNm, filename)
+    success, text = api_converter.hwp_to_txt_api(document.ntceSpecFileNm, filename)
+    if success:
+        document.converted_txt = text
+        document.is_converted = True
+    else:
+        document.is_converted = False
+
+    db.commit()
+    db.refresh(document)
+
+    return {
+        "status": "success" if success else "failed",
+        "document_id": document.id,
+        "is_converted": document.is_converted,
+    }
+
+# convert hwp olefile
+@app.post("/test/ole_convert/{notice_id}", tags=["test"])
+async def test_api_convert(
+        notice_id: int,
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Post
+    """
+    document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Notice not found")
+    if not document.ntceSpecFileNm:
+        raise HTTPException(status_code=404, detail="NTC Spec file not found")
+
+    # HWP to TXT
+    filename = f"{document.id}.hwp"
+    success, text = ole_converter.hwp_to_txt_ole(document.ntceSpecFileNm, filename)
     if success:
         document.converted_txt = text
         document.is_converted = True

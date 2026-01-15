@@ -2,12 +2,12 @@ import requests
 import io
 from typing import Optional, Tuple
 
-class HWPConverter:
+class HwpApiConverter:
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.api_url = "~~~~~"
 
-    def hwp_to_txt(self, hwp_binary: bytes, filename: str = "document.hwp") -> Tuple[Optional[str], bool]:
+    def hwp_to_txt_api(self, hwp_binary: bytes, filename: str = "document.hwp") -> Tuple[Optional[str], bool]:
         """
         HWP 바이너리를 TXT로 변환
         Args:
