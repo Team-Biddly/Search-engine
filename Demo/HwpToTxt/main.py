@@ -44,38 +44,38 @@ async def test_upload(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-# convert hwp api
-@app.post("/test/api_convert/{notice_id}", tags=["test"])
-async def test_api_convert(
-        notice_id: int,
-        db: Session = Depends(get_db),
-):
-    """
-    Method: Post
-    """
-    document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
-    if not document:
-        raise HTTPException(status_code=404, detail="Notice not found")
-    if not document.ntceSpecFileNm:
-        raise HTTPException(status_code=404, detail="NTC Spec file not found")
-
-    # HWP to TXT
-    filename = f"{document.id}.hwp"
-    success, text = api_converter.hwp_to_txt_api(document.ntceSpecFileNm, filename)
-    if success:
-        document.converted_txt = text
-        document.is_converted = True
-    else:
-        document.is_converted = False
-
-    db.commit()
-    db.refresh(document)
-
-    return {
-        "status": "success" if success else "failed",
-        "document_id": document.id,
-        "is_converted": document.is_converted,
-    }
+# # convert hwp api
+# @app.post("/test/api_convert/{notice_id}", tags=["test"])
+# async def test_api_convert(
+#         notice_id: int,
+#         db: Session = Depends(get_db),
+# ):
+#     """
+#     Method: Post
+#     """
+#     document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
+#     if not document:
+#         raise HTTPException(status_code=404, detail="Notice not found")
+#     if not document.ntceSpecFileNm:
+#         raise HTTPException(status_code=404, detail="NTC Spec file not found")
+#
+#     # HWP to TXT
+#     filename = f"{document.id}.hwp"
+#     success, text = api_converter.hwp_to_txt_api(document.ntceSpecFileNm, filename)
+#     if success:
+#         document.converted_txt = text
+#         document.is_converted = True
+#     else:
+#         document.is_converted = False
+#
+#     db.commit()
+#     db.refresh(document)
+#
+#     return {
+#         "status": "success" if success else "failed",
+#         "document_id": document.id,
+#         "is_converted": document.is_converted,
+#     }
 
 # convert hwp olefile
 @app.post("/test/ole_convert/{notice_id}", tags=["test"])

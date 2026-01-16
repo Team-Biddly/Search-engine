@@ -37,13 +37,6 @@ class HwpOleFileConverter:
             ole.close()
             return decoded_text, True
 
-            # # try PrvText
-            # if ole.exists('PrvText'):
-            #     encoded_text = ole.openstream('PrvText').read()
-            #     decoded_text = zlib.decompress(encoded_text)
-            #     ole.close()
-            #     return decoded_text, False
-
             # # try BodyText
             # if ole.exists('BodyText'):
             #     sections = []
