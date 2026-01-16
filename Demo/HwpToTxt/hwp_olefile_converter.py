@@ -1,8 +1,9 @@
 import olefile
 import zlib
-import struct
 import io
 from typing import Optional, Tuple
+import re
+import unicodedata
 
 class HwpOleFileConverter:
     def __init__(self):
@@ -91,14 +92,10 @@ class HwpOleFileConverter:
         """
         try:
             text = data.decode("utf-16", errors="ignore")
-            cleaned_text = ''
-            for char in text:
-                code = ord(char)
-                if code > 32 or char in '\n\r\t':
-                    cleaned_text += char
-                elif code == 13:
-                    cleaned_text += "\n"
-
-            return cleaned_text
+            # 중국어 정제
+            cleaned1_text = re.sub(r'[\u4e00-\u9fff]+', '', text)
+            # 바이트 문자열 제거
+            cleaned2_text = ''.join(char for char in cleaned1_text if unicodedata.category(char)[0] != "C")
+            return cleaned2_text
         except Exception as e:
             return ""
