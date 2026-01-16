@@ -32,16 +32,16 @@ class HwpOleFileConverter:
 
             all_texts = []
 
-            # PrvText
-            if ole.exists('PrvText'):
-                print("[PrvText read]")
-                encoded_text = ole.openstream('PrvText').read()
-                print(f"[PrvText encoded size] {len(encoded_text)}")
-                decoded_text = encoded_text.decode("utf-16")
-                print(f"[PrvText decoded size] {len(decoded_text)}")
-                all_texts.append(decoded_text)
-            else:
-                print("[PrvText not exist]")
+            # # PrvText
+            # if ole.exists('PrvText'):
+            #     print("[PrvText read]")
+            #     encoded_text = ole.openstream('PrvText').read()
+            #     print(f"[PrvText encoded size] {len(encoded_text)}")
+            #     decoded_text = encoded_text.decode("utf-16")
+            #     print(f"[PrvText decoded size] {len(decoded_text)}")
+            #     all_texts.append(decoded_text)
+            # else:
+            #     print("[PrvText not exist]")
 
             # BodyText
             print("[BodyText read]")
@@ -96,6 +96,7 @@ class HwpOleFileConverter:
             cleaned1_text = re.sub(r'[\u4e00-\u9fff]+', '', text)
             # 바이트 문자열 제거
             cleaned2_text = ''.join(char for char in cleaned1_text if unicodedata.category(char)[0] != "C")
-            return cleaned2_text
+            cleaned3_text = re.sub(r'[^가-힣a-zA-Z0-9\s.,\[\]\(\)\:\-\~\%\/]', '', cleaned2_text)
+            return cleaned3_text
         except Exception as e:
             return ""
