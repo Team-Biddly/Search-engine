@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from database import BidNotice, get_db, init_db
-from hwp_api_converter import HwpApiConverter
+# from hwp_api_converter import HwpApiConverter
 from hwp_olefile_converter import HwpOleFileConverter
 
 app = FastAPI(
@@ -11,7 +11,7 @@ app = FastAPI(
 )
 
 # Init
-api_converter = HwpApiConverter(api_key="~~~~")
+# api_converter = HwpApiConverter(api_key="~~~~")
 ole_converter = HwpOleFileConverter()
 init_db()
 

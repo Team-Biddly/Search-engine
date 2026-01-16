@@ -29,43 +29,75 @@ class HwpOleFileConverter:
             for entry in ole.listdir():
                 print(f"   - {'/'.join(entry)}")
 
-            print("[PrvText read]")
-            encoded_text = ole.openstream('PrvText').read()
-            print(f"[PrvText size] {len(encoded_text)}")
-            decoded_text = encoded_text.decode("utf-16")
-            print(f"[PrvText size decoded] {len(decoded_text)}")
-            ole.close()
-            return decoded_text, True
+            all_texts = []
 
-            # # try BodyText
-            # if ole.exists('BodyText'):
-            #     sections = []
-            #     section_num = 0
+            # PrvText
+            if ole.exists('PrvText'):
+                print("[PrvText read]")
+                encoded_text = ole.openstream('PrvText').read()
+                print(f"[PrvText encoded size] {len(encoded_text)}")
+                decoded_text = encoded_text.decode("utf-16")
+                print(f"[PrvText decoded size] {len(decoded_text)}")
+                all_texts.append(decoded_text)
+            else:
+                print("[PrvText not exist]")
+
+            # # BodyText
+            # print("[BodyText read]")
+            # section_num = 0
             #
-            #     while ole.exists(f'BodyText/Section{section_num}'):
+            # while ole.exists(f'BodyText/Section{section_num}'):
+            #     print(f"[BodyText section {section_num}]")
+            #     try:
             #         stream = ole.openstream(f'BodyText/Section{section_num}')
             #         data = stream.read()
+            #         print(f"[BodyText size] {len(data)}")
             #
-            #         # try unzip
+            #         # unzip
             #         try:
             #             decompressed = zlib.decompress(data, -15)
-            #             text = decompressed.decode('utf-16', errors='ignore')
-            #             sections.append(text)
-            #         except:
-            #             text = data.decode('utf-16', errors='ignore')
-            #             sections.append(text)
+            #             print(f"[BodyText decompressed size] {len(decompressed)}")
+            #             all_texts.append(decompressed)
+            #             section_text = self._extract_text_from_bodytext(decompressed)
+            #         except zlib.error as e:
+            #             print("[BodyText not zip]")
+            #             section_text = self._extract_text_from_bodytext(data)
             #
-            #         section_num += 1
+            #         if section_text.strip():
+            #             all_texts.append(section_text)
+            #             print(f"[BodyText size] {len(all_texts)}")
+            #     except Exception as e:
+            #         print(f"[BodyText section {section_num} error] {str(e)}")
             #
-            #     ole.close()
-            #
-            #     if sections:
-            #         return '\n'.join(sections), True
-            #     else:
-            #         return None, False
-            # else:
-            #     ole.close()
-            #     return None, False
+            #     section_num += 1
+
+            ole.close()
+
+            return "".join(all_texts), True
 
         except Exception as e:
             return None, False
+
+    def _extract_text_from_bodytext(self, data: bytes) -> Optional[str]:
+        """
+        BodyText binary data에서 txt 추출
+
+        Args:
+            data: 압축 해제 된 BodyText
+
+        Returns:
+            추출된 TXT
+        """
+        try:
+            text = data.decode("utf-16", errors="ignore")
+            cleaned_text = ''
+            for char in text:
+                code = ord(char)
+                if code > 32 or char in '\n\r\t':
+                    cleaned_text += char
+                elif code == 13:
+                    cleaned_text += "\n"
+
+            return cleaned_text
+        except Exception as e:
+            return ""
