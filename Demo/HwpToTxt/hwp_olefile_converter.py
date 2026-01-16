@@ -42,34 +42,35 @@ class HwpOleFileConverter:
             else:
                 print("[PrvText not exist]")
 
-            # # BodyText
-            # print("[BodyText read]")
-            # section_num = 0
-            #
-            # while ole.exists(f'BodyText/Section{section_num}'):
-            #     print(f"[BodyText section {section_num}]")
-            #     try:
-            #         stream = ole.openstream(f'BodyText/Section{section_num}')
-            #         data = stream.read()
-            #         print(f"[BodyText size] {len(data)}")
-            #
-            #         # unzip
-            #         try:
-            #             decompressed = zlib.decompress(data, -15)
-            #             print(f"[BodyText decompressed size] {len(decompressed)}")
-            #             all_texts.append(decompressed)
-            #             section_text = self._extract_text_from_bodytext(decompressed)
-            #         except zlib.error as e:
-            #             print("[BodyText not zip]")
-            #             section_text = self._extract_text_from_bodytext(data)
-            #
-            #         if section_text.strip():
-            #             all_texts.append(section_text)
-            #             print(f"[BodyText size] {len(all_texts)}")
-            #     except Exception as e:
-            #         print(f"[BodyText section {section_num} error] {str(e)}")
-            #
-            #     section_num += 1
+            # BodyText
+            print("[BodyText read]")
+            section_num = 0
+
+            while ole.exists(f'BodyText/Section{section_num}'):
+                print(f"[BodyText section {section_num}]")
+                try:
+                    stream = ole.openstream(f'BodyText/Section{section_num}')
+                    data = stream.read()
+                    print(f"[BodyText size] {len(data)}")
+
+                    # unzip
+                    try:
+                        decompressed = zlib.decompress(data, -15)
+                        print(f"[BodyText decompressed size] {len(decompressed)}")
+                        section_text = self._extract_text_from_bodytext(decompressed)
+                        all_texts.append(section_text)
+                        print(f"section text: {section_text}")
+                    except zlib.error as e:
+                        print("[BodyText not zip]")
+                        section_text = self._extract_text_from_bodytext(data)
+
+                    if section_text.strip():
+                        all_texts.append(section_text)
+                        print(f"[BodyText size] {len(all_texts)}")
+                except Exception as e:
+                    print(f"[BodyText section {section_num} error] {str(e)}")
+
+                section_num += 1
 
             ole.close()
 
