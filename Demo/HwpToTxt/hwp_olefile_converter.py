@@ -8,13 +8,7 @@ import unicodedata
 
 class HwpOleFileConverter:
     # HWP 레코드 태그 정의
-    HWPTAG_PARA_HEADER = 0x50
-    HWPTAG_PARA_TEXT = 0x43 # Target
-    HWPTAG_PARA_CHAR_SHAPE = 0x52
-    HWPTAG_PARA_LINE_SEG = 0x53
-    HWPTAG_PARA_RANGE_TAG = 0x54
-    HWPTAG_CTRL_HEADER = 0x55
-    HWPTAG_TABLE = 0x58
+    HWPTAG_PARA_TEXT = 0x43
 
     def __init__(self):
         pass
@@ -130,7 +124,7 @@ class HwpOleFileConverter:
                 pos += size
                 record_count += 1
 
-                # 0x51 레코드만 추출
+                # 0x43 레코드만 추출
                 if tag_id == self.HWPTAG_PARA_TEXT:
                     text = self._extract_text_from_bodytext(record_data)
                     if text:
