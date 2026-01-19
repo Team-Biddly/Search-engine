@@ -17,6 +17,7 @@ class BidNotice(Base):
     __tablename__ = "bid_notice"
 
     id = Column(Integer, primary_key=True, index=True)
+    ntceSpecFile = Column(String, index=True) # HWP File name
     ntceSpecFileNm = Column(LargeBinary, index=True) # HWP File
     converted_txt = Column(Text, nullable=True)
     is_converted = Column(Boolean, nullable=True)

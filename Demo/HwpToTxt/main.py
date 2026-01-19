@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from database import BidNotice, get_db, init_db
-# from hwp_api_converter import HwpApiConverter
 from hwp_olefile_converter import HwpOleFileConverter
 
 app = FastAPI(
@@ -11,11 +10,10 @@ app = FastAPI(
 )
 
 # Init
-# api_converter = HwpApiConverter(api_key="~~~~")
 ole_converter = HwpOleFileConverter()
 init_db()
 
-# upload hwp api
+# upload hwp
 @app.post("/test/upload", tags=["test"])
 async def test_upload(
         file: UploadFile = File(...),
@@ -29,6 +27,7 @@ async def test_upload(
     try:
         content = await file.read()
         notice = BidNotice(
+            ntceSpecFile=file.filename,
             ntceSpecFileNm=content,
         )
         db.add(notice)
@@ -43,39 +42,6 @@ async def test_upload(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
-# # convert hwp api
-# @app.post("/test/api_convert/{notice_id}", tags=["test"])
-# async def test_api_convert(
-#         notice_id: int,
-#         db: Session = Depends(get_db),
-# ):
-#     """
-#     Method: Post
-#     """
-#     document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
-#     if not document:
-#         raise HTTPException(status_code=404, detail="Notice not found")
-#     if not document.ntceSpecFileNm:
-#         raise HTTPException(status_code=404, detail="NTC Spec file not found")
-#
-#     # HWP to TXT
-#     filename = f"{document.id}.hwp"
-#     success, text = api_converter.hwp_to_txt_api(document.ntceSpecFileNm, filename)
-#     if success:
-#         document.converted_txt = text
-#         document.is_converted = True
-#     else:
-#         document.is_converted = False
-#
-#     db.commit()
-#     db.refresh(document)
-#
-#     return {
-#         "status": "success" if success else "failed",
-#         "document_id": document.id,
-#         "is_converted": document.is_converted,
-#     }
 
 # convert hwp olefile
 @app.post("/test/ole_convert/{notice_id}", tags=["test"])
@@ -111,3 +77,38 @@ async def test_ole_convert(
         "document_id": document.id,
         "is_converted": document.is_converted,
     }
+
+# Search For Keyword
+@app.get("/test/search", tags=["test"])
+async def test_search(
+        keyword: str,
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Get
+    Query Parameter: keyword
+    """
+    try:
+        documents = db.query(BidNotice).filter(
+            BidNotice.converted_txt.isnot(None),
+            BidNotice.converted_txt.contains(keyword),
+            BidNotice.converted_txt.like(f"%{keyword}%"),
+        ).all()
+
+        matched_results = [
+            {
+                "id": doc.id,
+                "file name": f"{doc.ntceSpecFile}",
+                "file 미리보기": f"{doc.converted_txt[:100]}"
+            }
+            for doc in documents
+        ]
+
+        return {
+            "status": "success",
+            "keyword": keyword,
+            "matched_count": len(matched_results),
+            "matched_results": matched_results,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
