@@ -76,3 +76,36 @@ async def test_ole_convert(
         "document_id": document.id,
         "is_converted": document.is_converted,
     }
+
+# Search For Keyword
+@app.get("/test/search", tags=["test"])
+async def test_search(
+        keyword: str,
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Get
+    Query Parameter: keyword
+    """
+    try:
+        documents = db.query(BidNotice).filter(
+            BidNotice.converted_txt.isnot(None),
+            BidNotice.converted_txt.contains(keyword),
+        ).all()
+
+        matched_results = [
+            {
+                "id": doc.id,
+                "file 미리보기": f"{doc.converted_txt[:100]}.hwp"
+            }
+            for doc in documents
+        ]
+
+        return {
+            "status": "success",
+            "keyword": keyword,
+            "matched_count": len(matched_results),
+            "matched_results": matched_results,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
