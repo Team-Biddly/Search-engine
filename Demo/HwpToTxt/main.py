@@ -91,6 +91,7 @@ async def test_search(
         documents = db.query(BidNotice).filter(
             BidNotice.converted_txt.isnot(None),
             BidNotice.converted_txt.contains(keyword),
+            BidNotice.converted_txt.like(f"%{keyword}%"),
         ).all()
 
         matched_results = [
