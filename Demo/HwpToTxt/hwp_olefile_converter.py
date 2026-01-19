@@ -32,7 +32,7 @@ class HwpOleFileConverter:
 
             all_texts = []
 
-            # # PrvText
+            # # PrvText 현재 미사용
             # if ole.exists('PrvText'):
             #     print("[PrvText read]")
             #     encoded_text = ole.openstream('PrvText').read()
@@ -60,7 +60,6 @@ class HwpOleFileConverter:
                         print(f"[BodyText decompressed size] {len(decompressed)}")
                         section_text = self._extract_text_from_bodytext(decompressed)
                         all_texts.append(section_text)
-                        print(f"section text: {section_text}")
                     except zlib.error as e:
                         print("[BodyText not zip]")
                         section_text = self._extract_text_from_bodytext(data)
@@ -94,9 +93,13 @@ class HwpOleFileConverter:
             text = data.decode("utf-16", errors="ignore")
             # 중국어 정제
             cleaned1_text = re.sub(r'[\u4e00-\u9fff]+', '', text)
-            # 바이트 문자열 제거
+            # 제어 문자 제거 (C 카테고리)
             cleaned2_text = ''.join(char for char in cleaned1_text if unicodedata.category(char)[0] != "C")
+            # 유니코드 제거
             cleaned3_text = re.sub(r'[^가-힣a-zA-Z0-9\s.,\[\]\(\)\:\-\~\%\/]', '', cleaned2_text)
-            return cleaned3_text
+            # 연속 공백 제거
+            cleaned4_text = re.sub(r' +', ' ', cleaned3_text)
+            cleaned5_text = re.sub(r'\t+', ' ', cleaned4_text)
+            return cleaned5_text
         except Exception as e:
             return ""

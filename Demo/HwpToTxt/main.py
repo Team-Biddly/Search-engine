@@ -96,8 +96,6 @@ async def test_ole_convert(
     # HWP to TXT
     filename = f"{document.id}.hwp"
     text, success = ole_converter.hwp_to_txt_ole(document.ntceSpecFileNm, filename)
-
-    print(f"[overview] {repr(text[:100]) if text else None}")
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text
