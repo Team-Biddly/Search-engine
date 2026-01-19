@@ -1,99 +1,111 @@
 import os
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from typing import List, Optional
+from fastapi import FastAPI, Depends, Query
+from sqlalchemy import create_engine, Column, Integer, String, or_
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+from pydantic import BaseModel
 
-app = Flask(__name__)#객체 생성
-basedir=os.path.abspath(os.path.dirname(__file__))
-#__file__: 현재 이 파이썬 파일의 전체 경로 예) C:\project\app.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'data.sqlite')}"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite') #db의 주소 연결?
-#app.config[]:flask 앱의 설정을 저장하는 딕셔너리
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-class TextData(db.Model):
-    id=db.Column(db.Integer,primary_key=True) #primary_key-> id자동으로 부여
-    name=db.Column(db.String(30),nullable=True)  #공고명
-
-    file1 = db.Column(db.String(30), nullable=True)  # 파일명
-    file2 = db.Column(db.String(30), nullable=True)
-    file3 = db.Column(db.String(30), nullable=True)
-
-    text1=db.Column(db.String(500),nullable=False) #본문(텍스트)
-    text2=db.Column(db.String(500),nullable=False)
-    text3=db.Column(db.String(500),nullable=False)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 
-    def __repr__(self):
-        return f"<TextData={self.content}>"
-def setup_database():
-    with app.app_context():
-        db.create_all()
+class TextData(Base):
+    __tablename__ = "TextData"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(30), nullable=False) # 공고명
+    file1 = Column(String(30), nullable=True)
+    file2 = Column(String(30), nullable=True)
+    file3 = Column(String(30), nullable=True)
+    text1 = Column(String(500), nullable=False) # 본문
+    text2 = Column(String(500), nullable=False)
+    text3 = Column(String(500), nullable=False)
 
+# --- Pydantic 스키마 ---
+# 데이터 생성을 위한 스키마 (Postman에서 보낼 데이터 형식)
+class TextDataCreate(BaseModel):
+    name: str
+    file1: Optional[str] = None
+    file2: Optional[str] = None
+    file3: Optional[str] = None
+    text1: str
+    text2: str = ""
+    text3: str = ""
 
-def search_in_db(keyword):
-    with app.app_context():
-        # 모든 컬럼에서 키워드 검색
-        result = TextData.query.filter(
-            (TextData.name.contains(keyword)) |      # name 검색
-            (TextData.file1.contains(keyword)) |     # file1 검색
-            (TextData.file2.contains(keyword)) |     # file2 검색
-            (TextData.file3.contains(keyword)) |     # file3 검색
-            (TextData.text1.contains(keyword)) |     # text1 검색
-            (TextData.text2.contains(keyword)) |     # text2 검색
-            (TextData.text3.contains(keyword))       # text3 검색
-        ).all()
-        return result
+# 검색 결과를 위한 스키마
+class SearchResultSchema(BaseModel):
+    id: int
+    name: Optional[str] = None
+    matched_locations: List[str]  # [수정됨] location -> locations (변수명 일치)
 
+    class Config:
+        from_attributes = True
 
-def find_keyword_locations(item, keyword):
+app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def find_keyword_locations(item: TextData, keyword: str) -> List[str]:
     locations = []
-
-    # name에 키워드가 있는지
     if item.name and keyword in item.name:
         locations.append(f"공고명({item.name})")
-
-    # file1, text1에 키워드가 있는지
-    if item.file1 and keyword in item.file1:
-        locations.append(f"파일명1({item.file1})")
     if item.text1 and keyword in item.text1:
         locations.append(f"본문1(파일: {item.file1})")
-
-    # file2, text2에 키워드가 있는지
     if item.file2 and keyword in item.file2:
         locations.append(f"파일명2({item.file2})")
     if item.text2 and keyword in item.text2:
         locations.append(f"본문2(파일: {item.file2})")
-
-    # file3, text3에 키워드가 있는지
-    if item.file3 and keyword in item.file3:
-        locations.append(f"파일명3({item.file3})")
-    if item.text3 and keyword in item.text3:
-        locations.append(f"본문3(파일: {item.file3})")
-
     return locations
-#메인 실행부
-if __name__=="__main__":
-    setup_database() #이전에 선언했던 함수.테이블 만들고 테이블의 content들이 비어있다면 내용 추가.
-    search_term=input("\n찾고싶은 단어를 검색해주세요.")
-    print(f"\n{search_term}을(를) 포함하는 문장 찾는 중...\n")
-    matched_results=search_in_db(search_term) #검색 단어가 테이블에 있는지/없는지
 
-    if matched_results:
-        print(f"검색 결과 ({len(matched_results)}개):\n")
-        for idx, item in enumerate(matched_results, 1):
-            # 어디에 키워드가 있는지 찾기
-            locations = find_keyword_locations(item, search_term)
+# --- [API] 데이터 추가 (테스트용) ---
+@app.post("/create")
+def create_data(item: TextDataCreate, db: Session = Depends(get_db)):
+    new_data = TextData(
+        name=item.name,
+        file1=item.file1, file2=item.file2, file3=item.file3,
+        text1=item.text1, text2=item.text2, text3=item.text3
+    )
+    db.add(new_data)
+    db.commit()
+    db.refresh(new_data)
+    return {"message": "데이터가 성공적으로 저장되었습니다.", "id": new_data.id}
 
-            # 결과 출력
-            print(f"--- 결과 {idx} ---")
-            print(f"ID: {item.id}")
-            print(f"공고명: {item.name}")
-            print(f"키워드 발견 위치:")
-            for loc in locations:
-                print(f"  ✓ {loc}")
-    else:
-        print("해당 단어를 찾을 수 없습니다!")
+# --- [API] 검색 ---
+@app.get("/search", response_model=List[SearchResultSchema])
+def search_in_db(
+        keyword: str = Query(..., min_length=1, description="검색할 단어"),
+        db: Session = Depends(get_db)
+):
+    results = db.query(TextData).filter(
+        or_(
+            TextData.name.contains(keyword),
+            TextData.file1.contains(keyword),
+            TextData.file2.contains(keyword),
+            TextData.file3.contains(keyword),
+            TextData.text1.contains(keyword),
+            TextData.text2.contains(keyword),
+            TextData.text3.contains(keyword)
+        )
+    ).all()
 
+    response_data = []
+    for item in results:
+        locs = find_keyword_locations(item, keyword)
+        response_data.append(SearchResultSchema(
+            id=item.id,
+            name=item.name,
+            matched_locations=locs # [수정됨] 스키마 변수명과 일치시킴
+        ))
+    return response_data
