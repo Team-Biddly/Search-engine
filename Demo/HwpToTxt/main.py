@@ -27,6 +27,7 @@ async def test_upload(
     try:
         content = await file.read()
         notice = BidNotice(
+            ntceSpecFile=file.filename,
             ntceSpecFileNm=content,
         )
         db.add(notice)
@@ -97,7 +98,8 @@ async def test_search(
         matched_results = [
             {
                 "id": doc.id,
-                "file 미리보기": f"{doc.converted_txt[:100]}.hwp"
+                "file name": f"{doc.ntceSpecFile}",
+                "file 미리보기": f"{doc.converted_txt[:100]}"
             }
             for doc in documents
         ]
