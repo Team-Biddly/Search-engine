@@ -1,4 +1,4 @@
-### [26.1.20]  SQLAlchemy의 Engine과 Session ###
+### TIL [26.1.20] SQLAlchemy의 Engine과 Session ###
 
 ## 핵심개념 ##
 ```
@@ -46,3 +46,61 @@ db.commit()            #db에 반영
 db.rollback()          #취소
 db.close()             #종료
 ```
+### TIL [26.1.21]  SQLAlchemy의 Engine과 Session ###
+ ORM=Obeject Relational Mapping(객체-관계 매핑)
+: 데이터베이스 테이블을 python 클래스처럼 다루게 해주는 기술.
+
+## 1. Base
+```
+Base = declarative_base()
+```
+   1) 모든 모델(테이블)의 기본 클래스
+   2) 일반 클래스지만, DeclarativeMeta 메타클래스로 만들어져서 특별한 기능을 가짐
+   3) 이것을 상속받는 모든 클래스에 orm기능을 자동으로 부여함
+   4) ```declarative_base()```를 통해 생성됨
+      
+## 2. MetaData
+   1) db를 전체적으로 관리하는데 용이
+   2)``` Base```를 상속받은 모든 테이블들을 일괄적으로 관리할 수 있음.
+   3) ```Base```를 상속받은 테이블이 생성되면 자동으로 metadata클래스에 추가됨
+      
+
+### <DB를 한번에 관리할 수 있는 예시>
+1) 새 프로젝트 시작 - 테이블 한번에 생성
+   ```
+   engine = create_engine('sqlite:///mydb.db')
+   Base.metadata.create_all(engine) #한줄로 모든 테이블 자동 생성
+   ```
+2) 개발 중 DB초기화
+   ```
+   Base.metadata.drop_all(engine) #한줄로 모두 삭제
+   Base.metadata.create_all(engine) #한줄로 모두 재생성
+   ```
+3) 테스트환경-여러 DB에 같은 구조 만들기
+   -> 시나리오: 개발DB,테스트DB,실서버DB 3개에 같은 테이블 만들어야 함
+   ```
+   #테이블 정의는 이미 되어있음
+
+   #개발 DB생성
+   dev_engine = create_engine('sqlite:///dev.db')
+   Base.metadata.create_all(dev_engine)
+
+   #테스트 DB에 생성
+   test_engine = create_engine('sqlite:///test.db')
+   Base.metadata.create_all(test_engine)
+
+   #실서버 DB에 생성
+   prod_engine = create_engine('postgresql://user:pass@server/db')
+   Base.metadata.create_all(prod_engine)
+   ```
+
+
+
+
+
+
+
+
+
+
+
