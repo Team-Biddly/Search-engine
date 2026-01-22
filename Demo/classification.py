@@ -2,7 +2,7 @@ from typing import Literal
 from pathlib import Path
 from fastapi import UploadFile
 
-from Demo.HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
+from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
 
 # 파일 타입 정의
 FileType = Literal["hwp", "doc", "pdf", "other"]
