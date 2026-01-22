@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 # DB Setting (Sqlite For Test)
-SQLALCHEMY_DATABASE_URI = "sqlite:///HwpToTxt_Test.db"
+SQLALCHEMY_DATABASE_URI = "sqlite:///PdfToTxt_Test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URI,
     connect_args={"check_same_thread": False},
@@ -17,8 +17,8 @@ class BidNotice(Base):
     __tablename__ = "bid_notice"
 
     id = Column(Integer, primary_key=True, index=True)
-    ntceSpecFile = Column(String, index=True) # HWP File name
-    ntceSpecFileNm = Column(LargeBinary, index=True) # HWP File
+    ntceSpecFile = Column(String, index=True) # File name
+    ntceSpecFileNm = Column(LargeBinary, index=True) # File
     converted_txt = Column(Text, nullable=True)
     is_converted = Column(Boolean, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
