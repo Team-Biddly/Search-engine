@@ -16,11 +16,11 @@ class FileClassifier:
 
     # 파일 매핑 (dict에 파일 타입 명시)
     EXTENSION_MAP: dict[str, FileType] = {
-        "hwp": ".hwp",
-        "hwpx": ".hwp",
-        "doc": ".doc",
-        "docx": ".doc",
-        "pdf": ".pdf",
+        ".hwp": "hwp",
+        ".hwpx": "hwp",
+        ".doc": "doc",
+        ".docx": "doc",
+        ".pdf": "pdf",
     }
 
     def __init__(self):
@@ -70,12 +70,12 @@ async def process_hwp(file: UploadFile) -> dict:
         content = await file.read()
         print(f"[File Classifier] HWP {file.filename} -> {len(content)} bytes")
         converter = HwpOleFileConverter()
-        converted_text, success = converter.hwp_to_txt_ole(content, file.filename)
+        text, success = converter.hwp_to_txt_ole(content, file.filename)
 
-        if success and converted_text:
+        if success and text:
             return {
                 "success": True,
-                "text": converted_text,
+                "text": text,
                 "message": "HWP Convert Success",
             }
         else:
@@ -106,12 +106,12 @@ async def process_doc(file: UploadFile) -> dict:
         content = await file.read()
         print(f"[File Classifier] DOC {file.filename} -> {len(content)} bytes")
         converter = HwpOleFileConverter()
-        converted_text, success = converter.hwp_to_txt_ole(content, file.filename)
+        text, success = converter.hwp_to_txt_ole(content, file.filename)
 
-        if success and converted_text:
+        if success and text:
             return {
                 "success": True,
-                "text": converted_text,
+                "text": text,
                 "message": "DOC Convert Success",
             }
         else:
@@ -142,12 +142,12 @@ async def process_pdf(file: UploadFile) -> dict:
         content = await file.read()
         print(f"[File Classifier] PDF {file.filename} -> {len(content)} bytes")
         converter = HwpOleFileConverter()
-        converted_text, success = converter.hwp_to_txt_ole(content, file.filename)
+        text, success = converter.hwp_to_txt_ole(content, file.filename)
 
-        if success and converted_text:
+        if success and text:
             return {
                 "success": True,
-                "text": converted_text,
+                "text": text,
                 "message": "PDF Convert Success",
             }
         else:

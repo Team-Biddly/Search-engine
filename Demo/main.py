@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from classification import process_file_by_type
 from classification import FileClassifier
-from HwpToTxt.database import BidNotice, get_db, init_db
+from database import BidNotice, get_db, init_db
 from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
 
 app = FastAPI(
@@ -31,11 +31,24 @@ async def test_classify(
     file_type = classifier.classify(file.filename)
     result = await process_file_by_type(file, file_type)
 
+    print(f"{result}")
+
+    content = await file.read()
+    result_save = BidNotice(
+        ntceSpecFile=file.filename,
+        ntceSpecFileNm=content,
+        converted_txt=result.get("text", ""),
+        is_converted=result.get("success", False),
+    )
+    db.add(result_save)
+    db.commit()
+    db.refresh(result_save)
+
     return {
         "filename": file.filename,
         "file_type": file_type,
         "success": result.get("success", False),
-        "converted_txt": result.get("converted_txt", ""),
+        "converted_txt": result.get("text", ""),
         "message": result.get("message", ""),
     }
 
