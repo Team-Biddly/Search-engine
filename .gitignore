@@ -350,3 +350,5 @@ $RECYCLE.BIN/
 .gitignore
 
 /Demo/HwpToTxt/HwpToTxt_Test.db
+/Demo/DocToTxt/DocToTxt_Test.db
+/Demo/FileToTxtByType_Test.db
