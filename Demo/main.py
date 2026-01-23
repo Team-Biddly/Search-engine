@@ -5,9 +5,9 @@ from classification import process_file_by_type
 from classification import FileClassifier
 from database import BidNotice, get_db, init_db
 
-from DocToTxt.doc_converter import DocOleFileConverter
-from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
-from PdfToTxt.pdf_converter import PdfFileConverter
+from DocToTxt.doc_converter import DocConverter
+from HwpToTxt.hwp_converter import HwpConverter
+from PdfToTxt.pdf_converter import PdfConverter
 
 app = FastAPI(
     title="File to Txt Converter",
@@ -17,9 +17,9 @@ app = FastAPI(
 
 # Init
 classifier = FileClassifier()
-hwp_converter = HwpOleFileConverter()
-doc_converter = DocOleFileConverter()
-pdf_converter = PdfFileConverter()
+hwp_converter = HwpConverter()
+doc_converter = DocConverter()
+pdf_converter = PdfConverter()
 
 init_db()
 
@@ -107,7 +107,7 @@ async def test_ole_convert(
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    text, success = hwp_converter.hwp_to_txt_ole(document.ntceSpecFileNm, filename)
+    text, success = hwp_converter.hwp_to_txt(document.ntceSpecFileNm, filename)
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text
@@ -179,7 +179,7 @@ async def test_ole_convert(
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    text, success = doc_converter.doc_to_txt_ole(document.ntceSpecFileNm, filename)
+    text, success = doc_converter.doc_to_txt(document.ntceSpecFileNm, filename)
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text

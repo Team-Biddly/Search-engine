@@ -1,4 +1,4 @@
-from pdf_converter import PdfFileConverter
+from pdf_converter import PdfConverter
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from database import BidNotice, get_db, init_db
@@ -9,7 +9,7 @@ app = FastAPI(
     version="demo",
 )
 
-pdf_converter = PdfFileConverter()
+pdf_converter = PdfConverter()
 init_db()
 @app.post("/test/upload", tags=["test"])
 async def test_upload(

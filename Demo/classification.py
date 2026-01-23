@@ -2,16 +2,16 @@ from typing import Literal
 from pathlib import Path
 from fastapi import UploadFile
 
-from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
-from DocToTxt.doc_converter import DocOleFileConverter
-from PdfToTxt.pdf_converter import PdfFileConverter
+from HwpToTxt.hwp_converter import HwpConverter
+from DocToTxt.doc_converter import DocConverter
+from PdfToTxt.pdf_converter import PdfConverter
 
 
 # 파일 타입 정의
 FileType = Literal["hwp", "doc", "pdf", "other"]
 
 # Init
-hwp_converter = HwpOleFileConverter()
+hwp_converter = HwpConverter()
 
 class FileClassifier:
     # 허용된 확장자 목록
@@ -72,8 +72,8 @@ async def process_hwp(file: UploadFile) -> dict:
     try:
         content = await file.read()
         print(f"[File Classifier] HWP {file.filename} -> {len(content)} bytes")
-        converter = HwpOleFileConverter()
-        text, success = converter.hwp_to_txt_ole(content, file.filename)
+        converter = HwpConverter()
+        text, success = converter.hwp_to_txt(content, file.filename)
 
         if success and text:
             return {
@@ -108,8 +108,8 @@ async def process_doc(file: UploadFile) -> dict:
     try:
         content = await file.read()
         print(f"[File Classifier] DOC {file.filename} -> {len(content)} bytes")
-        converter = DocOleFileConverter()
-        text, success = converter.doc_to_txt_ole(content, file.filename)
+        converter = DocConverter()
+        text, success = converter.doc_to_txt(content, file.filename)
 
         if success and text:
             return {
@@ -144,7 +144,7 @@ async def process_pdf(file: UploadFile) -> dict:
     try:
         content = await file.read()
         print(f"[File Classifier] PDF {file.filename} -> {len(content)} bytes")
-        converter = PdfFileConverter()
+        converter = PdfConverter()
         text, success = converter.pdf_to_txt(content, file.filename)
 
         if success and text:

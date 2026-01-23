@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from database import BidNotice, get_db, init_db
-from hwp_olefile_converter import HwpOleFileConverter
+from hwp_converter import HwpConverter
 
 app = FastAPI(
     title="HWP to Txt Converter",
@@ -10,7 +10,7 @@ app = FastAPI(
 )
 
 # Init
-ole_converter = HwpOleFileConverter()
+ole_converter = HwpConverter()
 init_db()
 
 # upload hwp
@@ -61,7 +61,7 @@ async def test_ole_convert(
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    text, success = ole_converter.hwp_to_txt_ole(document.ntceSpecFileNm, filename)
+    text, success = ole_converter.hwp_to_txt(document.ntceSpecFileNm, filename)
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text
