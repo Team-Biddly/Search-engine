@@ -3,6 +3,9 @@ from pathlib import Path
 from fastapi import UploadFile
 
 from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
+from DocToTxt.doc_converter import DocOleFileConverter
+from PdfToTxt.pdf_converter import PdfFileConverter
+
 
 # 파일 타입 정의
 FileType = Literal["hwp", "doc", "pdf", "other"]
@@ -94,7 +97,7 @@ async def process_hwp(file: UploadFile) -> dict:
 
 async def process_doc(file: UploadFile) -> dict:
     """
-    DOC TO TXT 호출 // 구현 후 수정 필요
+    DOC TO TXT 호출
 
     Args:
          file: Upload file
@@ -105,8 +108,8 @@ async def process_doc(file: UploadFile) -> dict:
     try:
         content = await file.read()
         print(f"[File Classifier] DOC {file.filename} -> {len(content)} bytes")
-        converter = HwpOleFileConverter()
-        text, success = converter.hwp_to_txt_ole(content, file.filename)
+        converter = DocOleFileConverter()
+        text, success = converter.doc_to_txt_ole(content, file.filename)
 
         if success and text:
             return {
@@ -141,8 +144,8 @@ async def process_pdf(file: UploadFile) -> dict:
     try:
         content = await file.read()
         print(f"[File Classifier] PDF {file.filename} -> {len(content)} bytes")
-        converter = HwpOleFileConverter()
-        text, success = converter.hwp_to_txt_ole(content, file.filename)
+        converter = PdfFileConverter()
+        text, success = converter.pdf_to_txt(content, file.filename)
 
         if success and text:
             return {
