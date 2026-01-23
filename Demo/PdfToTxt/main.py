@@ -11,6 +11,34 @@ app = FastAPI(
 
 pdf_converter = PdfFileConverter()
 init_db()
+@app.post("/test/upload", tags=["test"])
+async def test_upload(
+        file: UploadFile = File(...),
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Post
+    Body: form-data
+    Key: file
+    """
+    try:
+        content = await file.read()
+        notice = BidNotice(
+            ntceSpecFile=file.filename,
+            ntceSpecFileNm=content,
+        )
+        db.add(notice)
+        db.commit()
+        db.refresh(notice)
+
+        return {
+            "status": "success",
+            "message": "success",
+            "notice_id": notice.id,
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/test/pdf_convert/{notice_id}", tags=["test"])
 async def test_pdf_convert(
