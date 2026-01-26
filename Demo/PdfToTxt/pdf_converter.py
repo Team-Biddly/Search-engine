@@ -1,8 +1,10 @@
+from typing import Tuple, Optional
+
 import pdfplumber
 import io
 
 class PdfConverter: #추후 확장성을 위해  class로 작성
-    def pdf_to_txt(self, file_bytes:bytes)->(str,bool):
+    def pdf_to_txt(self, file_bytes:bytes, filename: str = "document.pdf")->Tuple[Optional[str], bool]:
         try:
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 text=""
