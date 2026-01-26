@@ -4,11 +4,11 @@ from typing import Optional, Tuple
 import re
 import unicodedata
 
-class DocOleFileConverter:
+class DocConverter:
     def __init__(self):
         pass
 
-    def doc_to_txt_ole(self, doc_binary: bytes, filename: str = "document.doc") -> Tuple[Optional[str], bool]:
+    def doc_to_txt(self, doc_binary: bytes, filename: str = "document.doc") -> Tuple[Optional[str], bool]:
         """
         DOC 바이너리를 TXT로 변환
         Args:

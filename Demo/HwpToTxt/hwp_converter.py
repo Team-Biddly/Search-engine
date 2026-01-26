@@ -6,14 +6,14 @@ from typing import Optional, Tuple
 import re
 import unicodedata
 
-class HwpOleFileConverter:
+class HwpConverter:
     # HWP 레코드 태그 정의
     HWPTAG_PARA_TEXT = 0x43
 
     def __init__(self):
         pass
 
-    def hwp_to_txt_ole(self, hwp_binary: bytes, filename: str = "document.hwp") -> Tuple[Optional[str], bool]:
+    def hwp_to_txt(self, hwp_binary: bytes, filename: str = "document.hwp") -> Tuple[Optional[str], bool]:
         """
         HWP 바이너리를 TXT로 변환
         Args:

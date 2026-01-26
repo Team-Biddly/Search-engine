@@ -1,7 +1,7 @@
 import pdfplumber
 import io
 
-class PdfFileConverter: #추후 확장성을 위해  class로 작성
+class PdfConverter: #추후 확장성을 위해  class로 작성
     def pdf_to_txt(self, file_bytes:bytes)->(str,bool):
         try:
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:

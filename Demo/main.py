@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 from classification import process_file_by_type
 from classification import FileClassifier
 from database import BidNotice, get_db, init_db
-from HwpToTxt.hwp_olefile_converter import HwpOleFileConverter
-from PdfToTxt.pdf_converter import PdfFileConverter
+
+from DocToTxt.doc_converter import DocConverter
+from HwpToTxt.hwp_converter import HwpConverter
+from PdfToTxt.pdf_converter import PdfConverter
 
 app = FastAPI(
     title="File to Txt Converter",
@@ -15,8 +17,9 @@ app = FastAPI(
 
 # Init
 classifier = FileClassifier()
-hwp_converter = HwpOleFileConverter()
-pdf_converter = PdfFileConverter()
+hwp_converter = HwpConverter()
+doc_converter = DocConverter()
+pdf_converter = PdfConverter()
 
 init_db()
 
@@ -55,10 +58,7 @@ async def test_classify(
         "message": result.get("message", ""),
     }
 
-
-
-#================================= HWP =================================
-# upload hwp
+# upload file
 @app.post("/test/upload", tags=["test"])
 async def test_upload(
         file: UploadFile = File(...),
@@ -88,8 +88,9 @@ async def test_upload(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+#================================= HWP =================================
 # convert hwp olefile
-@app.post("/test/ole_convert/{notice_id}", tags=["test"])
+@app.post("/test/hwp_convert/{notice_id}", tags=["test"])
 async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -106,7 +107,7 @@ async def test_ole_convert(
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
-    text, success = hwp_converter.hwp_to_txt_ole(document.ntceSpecFileNm, filename)
+    text, success = hwp_converter.hwp_to_txt(document.ntceSpecFileNm, filename)
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text
@@ -160,6 +161,76 @@ async def test_search(
         raise HTTPException(status_code=500, detail=str(e))
 
 #================================= DOC =================================
+# convert doc file
+@app.post("/test/doc_convert/{notice_id}", tags=["test"])
+async def test_ole_convert(
+        notice_id: int,
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Post
+    """
+    document = db.query(BidNotice).filter(BidNotice.id == notice_id).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Notice not found")
+    if not document.ntceSpecFileNm:
+        raise HTTPException(status_code=404, detail="NTC Spec file not found")
+
+    # HWP to TXT
+    filename = f"{document.id}.hwp"
+    text, success = doc_converter.doc_to_txt(document.ntceSpecFileNm, filename)
+    print(f"[overview] {text}")
+    if success:
+        document.converted_txt = text
+        document.is_converted = True
+    else:
+        document.is_converted = False
+
+    db.commit()
+    db.refresh(document)
+
+    return {
+        "status": "success" if success else "failed",
+        "document_id": document.id,
+        "is_converted": document.is_converted,
+    }
+
+
+# Search For Keyword
+@app.get("/test/search", tags=["test"])
+async def test_search(
+        keyword: str,
+        db: Session = Depends(get_db),
+):
+    """
+    Method: Get
+    Query Parameter: keyword
+    """
+    try:
+        documents = db.query(BidNotice).filter(
+            BidNotice.converted_txt.isnot(None),
+            BidNotice.converted_txt.contains(keyword),
+            BidNotice.converted_txt.like(f"%{keyword}%"),
+        ).all()
+
+        matched_results = [
+            {
+                "id": doc.id,
+                "file name": f"{doc.ntceSpecFile}",
+                "file 미리보기": f"{doc.converted_txt[:100]}"
+            }
+            for doc in documents
+        ]
+
+        return {
+            "status": "success",
+            "keyword": keyword,
+            "matched_count": len(matched_results),
+            "matched_results": matched_results,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 #================================= PDF =================================
 #pdf로 변환하여 저장
