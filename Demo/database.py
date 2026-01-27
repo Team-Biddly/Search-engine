@@ -36,13 +36,13 @@ def get_db():
     finally:
         db.close()
 
-#기본 입찰공고 정보(사용자가 입력)
+#기본 입찰공고 정보(사용자가 입력)->요청 형식 강제
 class BidNoticeBase(BaseModel):
     ntceSpecFile: str
     converted_txt: Optional[str]=None
     is_converted:Optional[bool]=None
 
-#db에서 자동 생성
+#db에서 자동 생성->응답 형식 강제
 class BidNoticeSchema(BidNoticeBase):
     id:int
     created_at: datetime
