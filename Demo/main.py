@@ -35,10 +35,21 @@ class UploadResponse(BaseModel):
     status:str
     message:str
     notice_id:int
+class DocConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
 
-class ConvertResponse(BaseModel):
+class HwpConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
+
+class PdfConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
     filename:str
-    converted_txt:str
 
 class SearchResultItem(BaseModel):
     id: int
@@ -119,7 +130,7 @@ async def test_upload(
 
 #================================= HWP =================================
 # convert hwp olefile
-@app.post("/test/hwp_convert/{notice_id}", tags=["test"],response_model=ConvertResponse)
+@app.post("/test/hwp_convert/{notice_id}", tags=["test"], response_model=HwpConvertResponse)
 async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -132,7 +143,7 @@ async def test_ole_convert(
     if not document:
         raise HTTPException(status_code=404, detail="Notice not found")
     if not document.ntceSpecFileNm:
-        raise HTTPException(status_code=404, detail="NTC Spec file not found")
+        raise HTTPException(status_code=404,detail="NTC Spec file not found")
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
@@ -158,7 +169,7 @@ async def test_ole_convert(
 
 #================================= DOC =================================
 # convert doc file
-@app.post("/test/doc_convert/{notice_id}", tags=["test"], response_model=ConvertResponse)
+@app.post("/test/doc_convert/{notice_id}", tags=["test"], response_model=DocConvertResponse)
 async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -196,7 +207,7 @@ async def test_ole_convert(
 
 #================================= PDF =================================
 #pdf로 변환하여 저장
-@app.post("/test/pdf_convert/{notice_id}", tags=["test"],response_model=ConvertResponse)
+@app.post("/test/pdf_convert/{notice_id}", tags=["test"],response_model=PdfConvertResponse)
 async def test_pdf_convert(
         notice_id: int,
         db: Session = Depends(get_db),
