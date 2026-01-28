@@ -1,7 +1,9 @@
+from pydantic import BaseModel,ConfigDict
 from sqlalchemy import create_engine, Column, Integer, String, LargeBinary, DateTime, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+from typing import Optional
 
 # DB Setting (Sqlite For Test)
 SQLALCHEMY_DATABASE_URI = "sqlite:///FileToTxtByType_Test.db"
@@ -33,3 +35,17 @@ def get_db():
         yield db
     finally:
         db.close()
+
+#기본 입찰공고 정보(사용자가 입력)->요청 형식 강제
+class BidNoticeBase(BaseModel):
+    ntceSpecFile: str
+    converted_txt: Optional[str]=None
+    is_converted:Optional[bool]=None
+
+#db에서 자동 생성->응답 형식 강제
+class BidNoticeSchema(BidNoticeBase):
+    id:int
+    created_at: datetime
+    updated_at:datetime
+
+    model_config=ConfigDict(from_attributes=True)

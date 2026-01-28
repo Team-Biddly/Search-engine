@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
 from classification import process_file_by_type
 from classification import FileClassifier
@@ -8,7 +10,6 @@ from database import BidNotice, get_db, init_db
 from DocToTxt.doc_converter import DocConverter
 from HwpToTxt.hwp_converter import HwpConverter
 from PdfToTxt.pdf_converter import PdfConverter
-
 app = FastAPI(
     title="File to Txt Converter",
     description="File to Txt Converter with Classifier",
@@ -23,8 +24,47 @@ pdf_converter = PdfConverter()
 
 init_db()
 
+class ClassifyResponse(BaseModel):
+    filename:str
+    file_type:str
+    success:bool
+    converted_txt:str
+    message:str
+
+class UploadResponse(BaseModel):
+    status:str
+    message:str
+    notice_id:int
+class DocConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
+
+class HwpConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
+
+class PdfConvertResponse(BaseModel):
+    status: str
+    document_id: int
+    is_converted: bool
+    filename:str
+
+class SearchResultItem(BaseModel):
+    id: int
+    file_name:str=Field(...,alias="file name")
+    preview: str =Field(...,alias="file 미리보기")
+
+class SearchResponse(BaseModel):
+    status:str
+    keyword: str
+    matched_count: int
+    matched_results: List[SearchResultItem]
+
+
 # file classifier
-@app.post("/test/classify", tags=["test"])
+@app.post("/test/classify", tags=["test"],response_model=ClassifyResponse)
 async def test_classify(
         file: UploadFile = File(...),
         db: Session = Depends(get_db)
@@ -59,7 +99,7 @@ async def test_classify(
     }
 
 # upload file
-@app.post("/test/upload", tags=["test"])
+@app.post("/test/upload", tags=["test"],response_model=UploadResponse)
 async def test_upload(
         file: UploadFile = File(...),
         db: Session = Depends(get_db),
@@ -90,7 +130,7 @@ async def test_upload(
 
 #================================= HWP =================================
 # convert hwp olefile
-@app.post("/test/hwp_convert/{notice_id}", tags=["test"])
+@app.post("/test/hwp_convert/{notice_id}", tags=["test"], response_model=HwpConvertResponse)
 async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -103,7 +143,7 @@ async def test_ole_convert(
     if not document:
         raise HTTPException(status_code=404, detail="Notice not found")
     if not document.ntceSpecFileNm:
-        raise HTTPException(status_code=404, detail="NTC Spec file not found")
+        raise HTTPException(status_code=404,detail="NTC Spec file not found")
 
     # HWP to TXT
     filename = f"{document.id}.hwp"
@@ -129,7 +169,7 @@ async def test_ole_convert(
 
 #================================= DOC =================================
 # convert doc file
-@app.post("/test/doc_convert/{notice_id}", tags=["test"])
+@app.post("/test/doc_convert/{notice_id}", tags=["test"], response_model=DocConvertResponse)
 async def test_ole_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -167,7 +207,7 @@ async def test_ole_convert(
 
 #================================= PDF =================================
 #pdf로 변환하여 저장
-@app.post("/test/pdf_convert/{notice_id}", tags=["test"])
+@app.post("/test/pdf_convert/{notice_id}", tags=["test"],response_model=PdfConvertResponse)
 async def test_pdf_convert(
         notice_id: int,
         db: Session = Depends(get_db),
@@ -214,7 +254,7 @@ async def test_pdf_convert(
     }
 
 # Search For Keyword
-@app.get("/test/search", tags=["test"])
+@app.get("/test/search", tags=["test"],response_model=SearchResponse)
 async def test_search(
         keyword: str,
         db: Session = Depends(get_db),
