@@ -27,8 +27,8 @@ async def test_upload(
     try:
         content = await file.read()
         notice = BidNotice(
-            ntceSpecFile=file.filename,
-            ntceSpecFileNm=content,
+            ntceSpecFileNm=file.filename,
+            ntceSpecFile=content,
         )
         db.add(notice)
         db.commit()
@@ -56,12 +56,12 @@ async def test_ole_convert(
 
     if not document:
         raise HTTPException(status_code=404, detail="Notice not found")
-    if not document.ntceSpecFileNm:
+    if not document.ntceSpecFile:
         raise HTTPException(status_code=404, detail="NTC Spec file not found")
 
     # DOC to TXT
     filename = f"{document.id}.doc"
-    text, success = doc_converter.doc_to_txt(document.ntceSpecFileNm, filename)
+    text, success = doc_converter.doc_to_txt(document.ntceSpecFile, filename)
     print(f"[overview] {text}")
     if success:
         document.converted_txt = text
@@ -98,7 +98,7 @@ async def test_search(
         matched_results = [
             {
                 "id": doc.id,
-                "file name": f"{doc.ntceSpecFile}",
+                "file name": f"{doc.ntceSpecFileNm}",
                 "file 미리보기": f"{doc.converted_txt[:100]}"
             }
             for doc in documents

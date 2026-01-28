@@ -17,8 +17,8 @@ class BidNotice(Base):
     __tablename__ = "bid_notice"
 
     id = Column(Integer, primary_key=True, index=True)
-    ntceSpecFile = Column(String, index=True) # File name
-    ntceSpecFileNm = Column(LargeBinary, index=True) # File
+    ntceSpecFileNm = Column(String, index=True) # File name
+    ntceSpecFile = Column(LargeBinary, index=True) # File
     converted_txt = Column(Text, nullable=True)
     is_converted = Column(Boolean, nullable=True)
     created_at = Column(DateTime, default=datetime.now)

@@ -19,8 +19,8 @@ class BidNotice(Base):
     __tablename__ = "bid_notice"
 
     id = Column(Integer, primary_key=True, index=True)
-    ntceSpecFile = Column(String, index=True) # File name
-    ntceSpecFileNm = Column(LargeBinary, index=True) # File
+    ntceSpecFileNm = Column(String, index=True) # File name
+    ntceSpecFile = Column(LargeBinary, index=True) # File
     converted_txt = Column(Text, nullable=True)
     is_converted = Column(Boolean, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
@@ -38,7 +38,7 @@ def get_db():
 
 #기본 입찰공고 정보(사용자가 입력)->요청 형식 강제
 class BidNoticeBase(BaseModel):
-    ntceSpecFile: str
+    ntceSpecFileNm: str
     converted_txt: Optional[str]=None
     is_converted:Optional[bool]=None
 
