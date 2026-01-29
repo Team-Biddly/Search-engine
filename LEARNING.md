@@ -94,6 +94,45 @@ Base = declarative_base()
    Base.metadata.create_all(prod_engine)
    ```
 
+### TIL [26.1.29] pydantic의 개념 및 존재 이유 ###
+
+## 1. pydantic의 개념 ##
+pydantic은 python 타입 힌트를 기반으로 데이터를 자동 검증하고 변환하는 라이브러리임
+단순히 타입을 체크하는 것을 넘어, 잘못된 데이터가 들어오면 명확한 에러 메세지를 제공하고,
+필요시 자동으로 타입을 변환함.
+
+## 2. 핵심 기능 ##
+1) 자동 데이터 검증
+   ```
+   class UploadResponse(BaseModel):
+      status: str
+      message: str
+      notice_id: int #이때 문자열이 들어오면 자동으로 에러 발생
+   ```
+2) 타입 자동 변환
+   ```
+   # "123"(문자열) -> 123(정수)로 자동 변환 시도
+   # 변환 불가능하면 validationError 발생
+
+3) 명확한 api 스키마 정의
+```
+class SearchResponse(BaseModel):
+   status: str
+   keyword: str
+   matched_coun: int
+   matchend_results: List[SearchResultItem]
+```
+4) FastAPI 자동 문서화 연동
+- swagger UI 에 요청/응답 예시 자동 생성
+- 프론트엔드 개발자가 API명세를 쉽게 이해
+  
+5) 필드 커스터마이징
+```
+class SearchResultItem(BaseModel):
+   id: int
+   file_name: str=Field(..., alias="file name") #JSON 키 이름 변경
+   preview: str=Filed(..., alias="file 미리보기") # 한글 키 지원
+```
 
 
 
