@@ -44,8 +44,8 @@ async def test_upload(
         raise HTTPException(status_code=500, detail=str(e))
 
 # convert hwp olefile
-@app.post("/test/ole_convert/{notice_id}", tags=["test"])
-async def test_ole_convert(
+@app.post("/test/hwp_convert/{notice_id}", tags=["test"])
+async def test_hwp_convert(
         notice_id: int,
         db: Session = Depends(get_db),
 ):
