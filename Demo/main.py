@@ -131,7 +131,7 @@ async def test_upload(
 #================================= HWP =================================
 # convert hwp olefile
 @app.post("/test/hwp_convert/{notice_id}", tags=["test"], response_model=HwpConvertResponse)
-async def test_ole_convert(
+async def test_hwp_convert(
         notice_id: int,
         db: Session = Depends(get_db),
 ):
@@ -170,7 +170,7 @@ async def test_ole_convert(
 #================================= DOC =================================
 # convert doc file
 @app.post("/test/doc_convert/{notice_id}", tags=["test"], response_model=DocConvertResponse)
-async def test_ole_convert(
+async def test_doc_convert(
         notice_id: int,
         db: Session = Depends(get_db),
 ):
